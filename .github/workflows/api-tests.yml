@@ -51,9 +51,9 @@ jobs:
         if: always()
         run: |
           curl -fsSL -o allure.tgz \
-            https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.29.1/allure-commandline-2.29.1.tgz
+            https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.32.0/allure-commandline-2.32.0.tgz
           tar -xzf allure.tgz
-          echo "$PWD/allure-2.29.1/bin" >> "$GITHUB_PATH"
+          echo "$PWD/allure-2.32.0/bin" >> "$GITHUB_PATH"
 
       - name: Generate Allure report with history
         if: always()
