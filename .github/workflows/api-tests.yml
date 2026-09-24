@@ -31,21 +31,38 @@ jobs:
       - name: Run TestNG suite
         run: mvn -B test
 
-      - name: Load Allure history from gh-pages
-        uses: actions/checkout@v4
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: target/allure-results
+          retention-days: 14
+
+      - name: Fetch previous Allure history
         if: always()
         continue-on-error: true
+        uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
 
-      - name: Build Allure report with history
-        uses: simple-elf/allure-report-action@v1.7
+      - name: Install Allure CLI
         if: always()
-        with:
-          allure_results: target/allure-results
-          allure_history: gh-pages/allure-history
-          keep_reports: 20
+        run: |
+          curl -fsSL -o allure.tgz \
+            https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.29.1/allure-commandline-2.29.1.tgz
+          tar -xzf allure.tgz
+          echo "$PWD/allure-2.29.1/bin" >> "$GITHUB_PATH"
+
+      - name: Generate Allure report with history
+        if: always()
+        run: |
+          mkdir -p target/allure-results/history
+          if [ -d gh-pages/history ]; then
+            cp -r gh-pages/history/* target/allure-results/history/ || true
+          fi
+          allure generate target/allure-results -o allure-report --clean
 
       - name: Publish Allure report to GitHub Pages
         if: always() && github.ref == 'refs/heads/main'
@@ -53,6 +70,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
-          destination_dir: .
+          publish_dir: allure-report
           keep_files: false
