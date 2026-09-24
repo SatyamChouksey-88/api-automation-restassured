@@ -1,0 +1,7 @@
+{
+  "users": [
+    { "name": "Satyam Chouksey", "job": "SDET" },
+    { "name": "Ada Lovelace", "job": "API Engineer" },
+    { "name": "Grace Hopper", "job": "QA Lead" }
+  ]
+}
