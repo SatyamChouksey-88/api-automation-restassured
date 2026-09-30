@@ -6,15 +6,15 @@
 
 **[▶ Live Allure report](https://satyamchouksey-88.github.io/api-automation-restassured/)**
 
-Java 17 + REST Assured + TestNG suite against the public [ReqRes](https://reqres.in) API — CRUD, negative paths, JSON Schema validation, data-driven creates, and Allure on GitHub Pages.
+Java 17 + REST Assured + TestNG suite against the public [ReqRes](https://reqres.in) API — CRUD, negative paths, JSON Schema validation, data-driven creates, pagination contracts, and Allure on GitHub Pages.
 
 ## 1. Overview
 
-ReqRes is a free fake REST API designed for testing. This portfolio repo demonstrates an enterprise-style Java API layer (client + POJOs + config) with TestNG orchestration, schema contracts, and CI-published Allure history — the Java/API gap many Playwright-only profiles leave empty.
+ReqRes is a free fake REST API for learning and demos. This repo shows an enterprise-style Java API layer (client + POJOs + config) with TestNG orchestration, schema contracts, optional `x-api-key` support, offline WireMock runs, and CI-published Allure history.
 
 ## 2. Test coverage
 
-Verified locally with `mvn test` (**17 tests, 0 failures**, 2026-09-24):
+**25 TestNG tests** (23 methods + 2 extra data-driven create rows). CI runs the full suite against **live ReqRes** and again with **`-Dmode=mock`** (WireMock).
 
 | Area | Tests | Type |
 |---|---|---|
@@ -22,13 +22,14 @@ Verified locally with `mvn test` (**17 tests, 0 failures**, 2026-09-24):
 | Create | 4 | Data-driven POST (3 rows) + POJO round-trip |
 | Update | 2 | PUT + PATCH |
 | Delete | 1 | 204 |
-| Negative | 3 | 404 user, register/login missing password |
+| Negative / auth errors | 5 | 404 user, missing password/email, invalid login |
 | Auth happy path | 2 | Register + login token |
-| List contract | 1 | `per_page` assertion |
+| List & pagination contracts | 5 | `per_page`, `total_pages`, empty page, page ids, support block |
+| Non-functional | 2 | Response time, `Content-Type` |
 
 ## 3. Tech stack
 
-Java 17 · Maven · TestNG · REST Assured · Jackson · JSON Schema Validator · Allure · GitHub Actions
+Java 17 · Maven · TestNG · REST Assured · Jackson · JSON Schema Validator · WireMock · Allure · GitHub Actions
 
 ## 4. Architecture
 
@@ -39,16 +40,18 @@ flowchart LR
   client --> models[models POJOs]
   client --> config[config/ApiConfig]
   tests --> schemas[schemas/*.json]
+  tests --> mock[WireMock offline mode]
 ```
 
 ## 5. Design decisions
 
-- **Client wrapper over raw RestAssured in every test** — URLs and content-type live in `UsersClient`; specs stay readable and DRY.
+- **Client wrapper over raw RestAssured in every test** — URLs, optional `x-api-key`, and content-type live in `UsersClient`.
 - **POJOs + Jackson NON_NULL** — create/update bodies serialize cleanly; PATCH can send only `job`.
 - **JSON Schema for list + single user** — contract checks catch field renames without brittle full-body equality.
-- **DataProvider from classpath JSON** — create cases come from `testdata/create-users.json`, not hardcoded loops in the test.
-- **ReqRes over Restful Booker** — reachable from this environment (HTTP 200 on `/api/users/2`); no auth cookie dance required for CRUD demos.
-- **Not automated:** real OAuth, pagination edge fuzzing beyond page 1–2, and load (owned by the JMeter portfolio repo).
+- **DataProvider from classpath JSON** — create cases come from `testdata/create-users.json`.
+- **Live vs offline** — default hits ReqRes; `-Dmode=mock` starts WireMock with ReqRes-shaped stubs (no network).
+- **Optional API key** — `REQRES_API_KEY` env or GitHub secret when ReqRes requires `x-api-key`.
+- **Not automated:** real OAuth, deep pagination fuzzing, and load (see the JMeter portfolio repo).
 
 ## 6. Getting started
 
@@ -57,34 +60,48 @@ flowchart LR
 mvn test
 ```
 
-Override base URL if needed:
+Override base URL or run offline:
 
 ```bash
 mvn test -DbaseUrl=https://reqres.in
+mvn test -Dmode=mock
 ```
+
+Optional ReqRes key (never commit; invalid keys return HTTP 403):
+
+```bash
+export REQRES_API_KEY=your-key-from-app.reqres.in
+mvn test
+```
+
+If live ReqRes is down or starts requiring a key and none is set, the suite **skips** with a clear message — use `mvn test -Dmode=mock` for offline runs. See `.env.example`.
 
 ## 7. CI/CD
 
-| Trigger | Action |
-|---|---|
-| Push / PR / nightly cron | `mvn test` on Temurin 17 |
-| Always (on main) | Build Allure report with history → publish `gh-pages` |
+| Trigger | What runs | Report |
+|---|---|---|
+| Push / PR / nightly / manual | `mvn test` (live) + `mvn test -Dmode=mock` on Temurin 17 | Allure artifact |
+| Push to `main` | Publish Allure with history | [GitHub Pages](https://satyamchouksey-88.github.io/api-automation-restassured/) |
+| Push / PR | Gitleaks on full history | — |
 
-Workflow: [`.github/workflows/api-tests.yml`](.github/workflows/api-tests.yml)
+Workflows: [api-tests.yml](.github/workflows/api-tests.yml), [secret-scan.yml](.github/workflows/secret-scan.yml)
 
 ## 8. Reports & evidence
 
-- Allure results: `target/allure-results` after `mvn test`
-- Live Pages report (after first green `main` deploy): https://satyamchouksey-88.github.io/api-automation-restassured/
-- Screenshot of the Allure dashboard: *add after first Pages deploy if you want a README embed*
+- Local: `target/allure-results` after `mvn test`; open with `allure serve target/allure-results`
+- **Live Allure:** https://satyamchouksey-88.github.io/api-automation-restassured/
 
-## 9. Roadmap / known limitations
+![Allure overview — published report on GitHub Pages](docs/images/allure-dashboard.png)
 
-- ReqRes is a mock API — create/update do not persist; tests assert response shape/status, not durable state.
-- Public demos can rate-limit or change payloads; keep assertions on documented fields only.
-- Optional next: WireMock for offline CI if ReqRes is unreachable.
+*Screenshot from the live Pages report (`main` deploy). After you merge, the dashboard will show the updated 25-test suite.*
+
+## 9. Known limitations / roadmap
+
+- ReqRes is a mock API — create/update do not persist; assertions target response shape/status.
+- Public demos can rate-limit or change payloads; keep contracts on documented fields.
+- Optional: banking-style synthetic FX validation repo (separate portfolio project).
 
 ## 10. Author & license
 
-**Satyam Chouksey** — QA Automation Engineer / SDET  
-MIT — see [LICENSE](LICENSE).
+**Satyam Chouksey** — QA Automation Engineer / SDET · Bhopal, India  
+MIT — see [LICENSE](LICENSE). All test data is synthetic; no employer or client data is used.

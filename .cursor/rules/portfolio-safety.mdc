@@ -1,0 +1,13 @@
+---
+description: Portfolio safety and quality rules
+globs: ""
+alwaysApply: true
+---
+
+# Portfolio safety
+
+- No secrets in git: use `.env.example` and GitHub Actions `secrets.REQRES_API_KEY` only.
+- No employer/client confidential data, internal URLs, or real banking/trade data in tests or docs.
+- No personal phone, home address, or CV files in public commits.
+- Work on `chore/portfolio-polish-*` branches; merge only when CI is green.
+- README test counts must match `mvn test` output (do not invent numbers).

@@ -188,4 +188,60 @@ public class UsersApiTest {
     Assert.assertEquals(created.getJob(), "The One");
     Assert.assertFalse(created.getId().isBlank());
   }
+
+  @Test(priority = 16)
+  @Description("POST /login with unknown email returns 400")
+  public void login_unknownEmail_returns400() {
+    users
+        .login(Map.of("email", "unknown-user@reqres.invalid", "password", "wrong-password"))
+        .then()
+        .statusCode(400)
+        .body("error", notNullValue());
+  }
+
+  @Test(priority = 17)
+  @Description("POST /register without email returns 400")
+  public void register_missingEmail_returns400() {
+    users.register(Map.of("password", "onlypassword")).then().statusCode(400).body("error", notNullValue());
+  }
+
+  @Test(priority = 18)
+  @Description("GET /users beyond last page returns empty data array")
+  public void listUsers_pageBeyondTotal_returnsEmptyData() {
+    users.listUsers(999).then().statusCode(200).body("data", empty()).body("page", equalTo(999));
+  }
+
+  @Test(priority = 19)
+  @Description("GET /users/{id} responds within 2 seconds")
+  public void getSingleUser_responseTimeUnder2s() {
+    users.getUser(2).then().statusCode(200).time(lessThan(2000L));
+  }
+
+  @Test(priority = 20)
+  @Description("GET /users/{id} returns JSON content type")
+  public void getSingleUser_contentTypeIsJson() {
+    users.getUser(2).then().statusCode(200).contentType(containsString("application/json"));
+  }
+
+  @Test(priority = 21)
+  @Description("Pagination page 1 and page 2 return different first user ids")
+  public void listUsers_page1AndPage2_firstUserIdsDiffer() {
+    int page1First =
+        users.listUsers(1).then().statusCode(200).extract().path("data[0].id");
+    int page2First =
+        users.listUsers(2).then().statusCode(200).extract().path("data[0].id");
+    Assert.assertNotEquals(page1First, page2First);
+  }
+
+  @Test(priority = 22)
+  @Description("GET /users/{id} includes support metadata block")
+  public void getSingleUser_includesSupportBlock() {
+    users.getUser(2).then().statusCode(200).body("support.url", notNullValue()).body("support.text", notNullValue());
+  }
+
+  @Test(priority = 23)
+  @Description("GET /users list exposes total_pages for pagination planning")
+  public void listUsers_declaresTotalPages() {
+    users.listUsers(1).then().statusCode(200).body("total_pages", greaterThan(0)).body("total", greaterThan(0));
+  }
 }

@@ -28,8 +28,13 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run TestNG suite
+      - name: Run TestNG suite (live ReqRes)
         run: mvn -B test
+        env:
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+
+      - name: Run TestNG suite (offline WireMock)
+        run: mvn -B test -Dmode=mock
 
       - name: Upload Allure results
         if: always()
