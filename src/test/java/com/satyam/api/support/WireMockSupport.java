@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 import com.satyam.api.config.ApiConfig;
 
 /** Starts WireMock with ReqRes-shaped stubs when {@code -Dmode=mock}. */
@@ -20,9 +19,7 @@ public final class WireMockSupport {
     }
     server =
         new WireMockServer(
-            WireMockConfiguration.wireMockConfig()
-                .dynamicPort()
-                .extensions(new ResponseTemplateTransformer(false)));
+            WireMockConfiguration.wireMockConfig().dynamicPort().globalTemplating(true));
     server.start();
     System.setProperty("baseUrl", "http://localhost:" + server.port());
     registerStubs();
