@@ -108,7 +108,8 @@ public final class WireMockSupport {
     server.stubFor(
         post(urlPathEqualTo("/api/login"))
             .withRequestBody(
-                equalToJson("{\"email\":\"eve.holt@reqres.in\",\"password\":\"wrong-password\"}", true, true))
+                equalToJson(
+                    "{\"email\":\"unknown-user@reqres.invalid\",\"password\":\"wrong-password\"}", true, true))
             .willReturn(
                 aResponse()
                     .withStatus(400)

@@ -190,10 +190,10 @@ public class UsersApiTest {
   }
 
   @Test(priority = 16)
-  @Description("POST /login with wrong password returns 400")
-  public void login_invalidCredentials_returns400() {
+  @Description("POST /login with unknown email returns 400")
+  public void login_unknownEmail_returns400() {
     users
-        .login(Map.of("email", "eve.holt@reqres.in", "password", "wrong-password"))
+        .login(Map.of("email", "unknown-user@reqres.invalid", "password", "wrong-password"))
         .then()
         .statusCode(400)
         .body("error", notNullValue());
