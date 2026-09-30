@@ -9,6 +9,7 @@ target/
 *.log
 .env
 .env.local
+!.env.example
 allure-report/
 allure-results/
 .allure/
