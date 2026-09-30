@@ -83,6 +83,7 @@ public final class WireMockSupport {
                     .withTransformers("response-template")));
     server.stubFor(
         post(urlPathEqualTo("/api/register"))
+            .atPriority(1)
             .withRequestBody(equalToJson("{\"email\":\"sydney@fife\"}", true, true))
             .willReturn(
                 aResponse()
@@ -91,6 +92,7 @@ public final class WireMockSupport {
                     .withBody("{\"error\":\"Missing password\"}")));
     server.stubFor(
         post(urlPathEqualTo("/api/register"))
+            .atPriority(1)
             .withRequestBody(equalToJson("{\"password\":\"onlypassword\"}", true, true))
             .willReturn(
                 aResponse()
@@ -99,6 +101,7 @@ public final class WireMockSupport {
                     .withBody("{\"error\":\"Missing email\"}")));
     server.stubFor(
         post(urlPathEqualTo("/api/login"))
+            .atPriority(1)
             .withRequestBody(equalToJson("{\"email\":\"peter@klaven\"}", true, true))
             .willReturn(
                 aResponse()
@@ -107,6 +110,7 @@ public final class WireMockSupport {
                     .withBody("{\"error\":\"Missing password\"}")));
     server.stubFor(
         post(urlPathEqualTo("/api/login"))
+            .atPriority(1)
             .withRequestBody(
                 equalToJson(
                     "{\"email\":\"unknown-user@reqres.invalid\",\"password\":\"wrong-password\"}", true, true))
@@ -133,6 +137,7 @@ public final class WireMockSupport {
     server.stubFor(delete(urlPathMatching("/api/users/.*")).willReturn(aResponse().withStatus(204)));
     server.stubFor(
         post(urlPathEqualTo("/api/register"))
+            .atPriority(10)
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -140,6 +145,7 @@ public final class WireMockSupport {
                     .withBody("{\"id\":1,\"token\":\"mock-token\"}")));
     server.stubFor(
         post(urlPathEqualTo("/api/login"))
+            .atPriority(10)
             .willReturn(
                 aResponse()
                     .withStatus(200)
