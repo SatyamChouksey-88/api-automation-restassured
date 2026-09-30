@@ -9,6 +9,7 @@ public class TestEnvironmentListener implements ISuiteListener {
   @Override
   public void onStart(ISuite suite) {
     WireMockSupport.startIfMockMode();
+    LiveApiProbe.ensureLiveApiReachableOrSkip();
   }
 
   @Override

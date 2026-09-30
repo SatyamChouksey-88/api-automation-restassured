@@ -67,14 +67,14 @@ mvn test -DbaseUrl=https://reqres.in
 mvn test -Dmode=mock
 ```
 
-Optional ReqRes key (never commit):
+Optional ReqRes key (never commit; invalid keys return HTTP 403):
 
 ```bash
 export REQRES_API_KEY=your-key-from-app.reqres.in
 mvn test
 ```
 
-See `.env.example` for local env naming.
+If live ReqRes is down or starts requiring a key and none is set, the suite **skips** with a clear message — use `mvn test -Dmode=mock` for offline runs. See `.env.example`.
 
 ## 7. CI/CD
 
@@ -90,6 +90,10 @@ Workflows: [api-tests.yml](.github/workflows/api-tests.yml), [secret-scan.yml](.
 
 - Local: `target/allure-results` after `mvn test`; open with `allure serve target/allure-results`
 - **Live Allure:** https://satyamchouksey-88.github.io/api-automation-restassured/
+
+![Allure overview — published report on GitHub Pages](docs/images/allure-dashboard.png)
+
+*Screenshot from the live Pages report (`main` deploy). After you merge, the dashboard will show the updated 25-test suite.*
 
 ## 9. Known limitations / roadmap
 
